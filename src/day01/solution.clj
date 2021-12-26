@@ -1,5 +1,4 @@
-(ns advent-of-code-2021.day01
-  (:require [clojure.java.io :as io]))
+(ns advent-of-code-2021.day01)
 
 (def sample-input [199
                    200
@@ -12,10 +11,7 @@
                    260
                    263])
 
-(def data-file (io/resource
-                "day01/part_one.txt"))
-
-(def part-one-input (->> data-file
+(def part-one-input (->> "resources/day01/part_one.txt"
                          slurp
                          clojure.string/split-lines
                          (map #(Integer/parseInt %))))
@@ -46,8 +42,8 @@
   (->> sample-input
        (map inc)
        (reduce +))
-  (part-one-solution (map #(apply + %) 
-       (partition 3 
-                  (interleave sample-input 
-                              (drop 1 sample-input) 
-                              (drop 2 sample-input))))))
+  (part-one-solution (map #(apply + %)
+                          (partition 3
+                                     (interleave sample-input
+                                                 (drop 1 sample-input)
+                                                 (drop 2 sample-input))))))
