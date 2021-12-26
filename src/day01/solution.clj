@@ -17,27 +17,25 @@
                          (map #(Integer/parseInt %))))
 
 (defn part-one-solution [input]
-  (let [interleaved (interleave input (drop 1 input))]
-    (->> interleaved
-         (partition 2)
-         (map #(if (> (second %) (first %)) 1 0))
-         (reduce +))))
+  (->> input
+       (partition 2 1)
+       (map #(if (> (second %) (first %)) 1 0))
+       (reduce +)))
 
 (part-one-solution part-one-input)
 
 (defn part-two-solution [input]
-  (let [parsed (interleave input (drop 1 input) (drop 2 input))]
-    (->> parsed
-         (partition 3)
-         (map #(apply + %))
-         part-one-solution)))
+  (->> input
+       (partition 3 1)
+       (map #(apply + %))
+       part-one-solution))
 
-(part-two-solution sample-input)
 (part-two-solution part-one-input)
 
 (comment
   part-one-input
   (part-one-solution sample-input)
+  (part-two-solution sample-input)
 
   (->> sample-input
        (map inc)
