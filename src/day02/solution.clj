@@ -32,3 +32,29 @@
        calculate-result))
 
 (part-one-solution part-one-input)
+
+(defn get-accumulator-fn [parsed]
+  (let [v (:value parsed)]
+    (case (:command parsed)
+      "forward" (fn [acc]
+                  (-> acc
+                      (update-in [:horizontal] + v)
+                      (update-in [:depth] + (* v (:aim acc)))))
+      "down" (fn [acc]
+               (update-in acc [:aim] + v))
+      "up" (fn [acc]
+             (update-in acc [:aim] - v)))))
+
+(defn accumulator [acc current]
+  (let [func (get-accumulator-fn current)]
+    (func acc)))
+
+(def original-state {:horizontal 0 :depth 0 :aim 0})
+
+(defn part-two-solution [input]
+  (->> input
+       (map parse-input)
+       (reduce accumulator original-state)
+       (#(* (:horizontal %) (:depth %)))))
+
+(part-two-solution part-one-input)
