@@ -28,46 +28,53 @@
 
   (map frequencies transposed))
 
-
-(defn get-gamma-rate-in-map [m]
+(defn get-gamma-epsilon-in-map [m type]
   (let [zero (get m "0")
         one (get m "1")]
-    (if (> zero one) "0" "1")))
+    (if (= :gamma type)
+      (if (> zero one) "0" "1")
+      (if (> zero one) "1" "0"))))
 
-(defn get-epsilon-rate-in-map [m]
-  (let [zero (get m "0")
-        one (get m "1")]
-    (if (> zero one) "1" "0")))
-
-(defn get-gamma [input]
+(defn get-gamma-epsilon [input]
   (->> input
        (map #(string/split % #""))
        (apply transpose)
-       (map frequencies)
-       (map get-gamma-rate-in-map)
+       (map frequencies)))
+
+(defn get-gamma-value [freq]
+  (->> freq
+       (map #(get-gamma-epsilon-in-map % :gamma))
        (#(string/join %))
        (#(Integer/parseInt % 2))))
 
-(defn get-epsilon [input]
-  (->> input
-       (map #(string/split % #""))
-       (apply transpose)
-       (map frequencies)
-       (map get-epsilon-rate-in-map)
+(defn get-epsilon-value [freq]
+  (->> freq
+       (map #(get-gamma-epsilon-in-map % :epsilon))
        (#(string/join %))
        (#(Integer/parseInt % 2))))
+
+(defn get-gamma-epsilon-value [freq]
+  [(get-gamma-value freq) (get-epsilon-value freq)])
+
+(->> sample-input
+     get-gamma-epsilon
+     get-gamma-epsilon-value)
+
+(get-gamma-epsilon sample-input)
 
 (defn part-one-solution [input]
-  (* (get-gamma input) (get-epsilon input)))
+  (apply * (->> input
+                get-gamma-epsilon
+                get-gamma-epsilon-value)))
 
 (def part-one-input (->> "resources/day03/part_one.txt"
                          slurp
                          clojure.string/split-lines))
 
 (part-one-solution sample-input)
-(part-one-solution part-one-input)
+(part-one-solution part-one-input) ;;2724524
 
-(defn get-more-bit-for-oxygen [xs n]
+(defn get-more-bit-for-oxygen-co2 [xs n type]
   (->> xs
        (map #(string/split % #""))
        (apply transpose)
@@ -75,60 +82,28 @@
        (#(nth % n))
        (#(let [zero (get % "0")
                one (get % "1")]
-           (if (> zero one) "0" "1")))))
+           (if (= :co2 type)
+             (if (>= one zero) "0" "1")
+             (if (> zero one) "0" "1"))))))
 
-(defn get-more-bit-for-co2 [xs n]
-  (->> xs
-       (map #(string/split % #""))
-       (apply transpose)
-       (map frequencies)
-       (#(nth % n))
-       (#(let [zero (get % "0")
-               one (get % "1")]
-           (if (>= one zero) "0" "1")))))
-
-(get-more-bit-for-oxygen sample-input 0)
-
-(defn filter-oxygen [xs n]
-  (let [more-bit (get-more-bit-for-oxygen xs n)]
+(defn filter-input [xs n type]
+  (let [more-bit (get-more-bit-for-oxygen-co2 xs n type)]
     (filter #(= more-bit (nth (string/split % #"") n)) xs)))
 
-(defn filter-co2 [xs n]
-  (let [more-bit (get-more-bit-for-co2 xs n)]
-    (filter #(= more-bit (nth (string/split % #"") n)) xs)))
-
-(defn get-oxygen-generator-rating [xs n]
+(defn get-oxygen-co2-rating [xs n type]
   (if (= 1 (count xs))
     (first xs)
-    (get-oxygen-generator-rating (filter-oxygen xs n) (inc n))))
+    (get-oxygen-co2-rating (filter-input xs n type) (inc n) type)))
 
-(defn get-co2-scrubber-rating [xs n]
-  (if (= 1 (count xs))
-    (first xs)
-    (get-co2-scrubber-rating (filter-co2 xs n) (inc n))))
-
-(get-oxygen-generator-rating sample-input 0)
-(get-co2-scrubber-rating sample-input 0)
-
-(defn get-oxygen [input]
-  (let [rating (get-oxygen-generator-rating input 0)]
-    (->> rating
-         (#(string/join %))
-         (#(Integer/parseInt % 2)))))
-
-(defn get-co2 [input]
-  (let [rating (get-co2-scrubber-rating input 0)]
-    (->> rating
-         (#(string/join %))
-         (#(Integer/parseInt % 2)))))
-
-(get-oxygen sample-input)
-(get-co2 sample-input)
+(defn get-oxygen-co2 [input]
+  (let [oxygen (get-oxygen-co2-rating input 0 :co2)
+        co2 (get-oxygen-co2-rating input 0 :oxygen)]
+    (->> [oxygen co2]
+         (map #(string/join %))
+         (map #(Integer/parseInt % 2)))))
 
 (defn part-two-solution [input]
-  (let [oxygen (get-oxygen input)
-        co2 (get-co2 input)]
-    (* oxygen co2)))
+  (apply * (get-oxygen-co2 input)))
 
 (part-two-solution sample-input)
-(part-two-solution part-one-input)
+(part-two-solution part-one-input) ;;2775870
