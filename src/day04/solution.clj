@@ -34,7 +34,9 @@
   (map cleanup (filter (comp not empty?) (string/split input #"\n"))))
 
 (defn get-val-in-map [m x y]
-  (nth (nth m y) x))
+  (-> m
+      (nth y)
+      (nth x)))
 
 (defn find-coord-in-map [map v]
   (first (filter (comp not nil?) (for [x (range 5)
@@ -88,3 +90,48 @@
 
 (find-part-one-solution sample-input)
 (find-part-one-solution part-one-input)
+
+(defn get-every-map-result [draw-sequence bingo-maps]
+  (->> draw-sequence
+       (map #(find-coord-in-all-maps % bingo-maps))
+       (apply transpose)
+       (map win?)
+       (map-indexed vector)))
+
+(comment
+  (def parsed-input (get-parsed-input sample-input))
+  (def draw-sequence (first parsed-input))
+  draw-sequence
+  (def bingo-maps (partition 5 (drop 1 parsed-input)))
+  (get-every-map-result [7 4 9 5 11 17 23 2 0 14 21 24 10 16] bingo-maps)
+  (first (first (filter (comp nil? second) (get-every-map-result [7 4 9 5 11 17 23 2 0 14 21 24 10 16] bingo-maps)))))
+
+(defn get-last-unwon-map-index [result]
+  (->> result
+       (filter (comp nil? second))
+       first
+       first))
+
+(defn all-won? [result]
+  (every? #(true? (second %)) result))
+
+(defn find-all-winner? [n draw-sequence bingo-maps index]
+  (let [result (get-every-map-result (take n draw-sequence) bingo-maps)]
+    (if (all-won? result) {:num (nth draw-sequence (dec n)) :map-index index :n n}
+        (find-all-winner? (inc n) draw-sequence bingo-maps (get-last-unwon-map-index result)))))
+
+(comment
+  (all-won? '([0 true] [1 nil] [2 true]))
+  (all-won? '([0 true] [1 true] [2 true]))
+  (get-last-unwon-map-index '([0 true] [1 nil] [2 true]))
+  (find-all-winner? 1 draw-sequence bingo-maps -1))
+
+(defn find-part-two-solution [input]
+  (let [parsed-input (get-parsed-input input)
+        draw-sequence (first parsed-input)
+        bingo-maps (partition 5 (drop 1 parsed-input))
+        result (find-all-winner? 1 draw-sequence bingo-maps -1)]
+    (* (find-sum-of-unmarked draw-sequence bingo-maps result) (:num result))))
+
+(find-part-two-solution sample-input)
+(find-part-two-solution part-one-input)
