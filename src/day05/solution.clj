@@ -65,9 +65,6 @@
        (filter #(> (second %) 1))
        (count)))
 
-sample-input
-part-one-input
-
 (part-one-solution sample-input)
 (part-one-solution part-one-input)
 
@@ -91,6 +88,9 @@ part-one-input
 (part-two-solution part-one-input)
 
 (comment
+  sample-input
+  part-one-input
+
   (parse-coord "0,9")
 
   (is-horizontal-or-vertical {:start '(0 9) :end '(9 9)})
