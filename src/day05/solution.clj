@@ -31,21 +31,23 @@
         [end-x end-y] end]
     (= (Math/abs (- start-x end-x)) (Math/abs (- start-y end-y)))))
 
+(defn pad [n coll]
+  (take n (concat coll (repeat (first coll)))))
+
+(defn get-update-range-end-fn [start end]
+  (if (> start end) dec inc))
+
+(defn get-update-range-end-step [start end]
+  (if (> start end) -1 1))
+
 (defn get-coords-in-line [start end]
   (let [[start-x start-y] start
         [end-x end-y] end
-        min-x (Math/min start-x end-x)
-        max-x (Math/max start-x end-x)
-        min-y (Math/min start-y end-y)
-        max-y (Math/max start-y end-y)]
-    (if (or (= min-x max-x) (= min-y max-y))
-      (for [x (range min-x (inc max-x))
-            y (range min-y (inc max-y))]
-        [x y])
-      (map vector (range start-x ((if (> start-x end-x) dec inc) end-x) (if (> start-x end-x) -1 1))
-           (range start-y ((if (> start-y end-y) dec inc) end-y) (if (> start-y end-y) -1 1))))))
-
-(map vector [5 6 7 8] [5 4 3 2])
+        xs (range start-x ((get-update-range-end-fn start-x end-x) end-x) (get-update-range-end-step start-x end-x))
+        ys (range start-y ((get-update-range-end-fn start-y end-y) end-y) (get-update-range-end-step start-y end-y))
+        xs-padded (if (< (count xs) (count ys)) (pad (count ys) xs) xs)
+        ys-padded (if (< (count ys) (count xs)) (pad (count xs) ys) ys)]
+    (map vector xs-padded ys-padded)))
 
 (defn get-all-coords [result]
   (apply concat result))
@@ -101,14 +103,4 @@ part-one-input
   (get-coords-in-line [6 4] [2 0])
   (get-coords-in-line [5 5] [8 2])
 
-  (->> sample-input
-       (map #(string/split % #" -> "))
-       (map (fn [[start end]]
-              {:start (parse-coord start) :end (parse-coord end)}))
-       (filter is-valid-direction)
-       (map (fn [{:keys [start end]}]
-              (get-coords-in-line start end)))
-       (get-all-coords)
-       frequencies
-       (filter #(> (second %) 1))
-       (count)))
+  (map vector [5 6 7 8] [5 4 3 2]))
