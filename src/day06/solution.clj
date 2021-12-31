@@ -8,31 +8,31 @@
 (defn parse-input [input]
   (map #(Integer/parseInt %) (string/split input #",")))
 
-(defn spawn-fish-if-needed [timers]
-  (let [zeros (count (filter #(= -1 %) timers))
-        resetted (map #(if (= -1 %) 6 %) timers)]
-    (concat resetted (repeat zeros 8))))
+(defn spawn [state]
+  (let [eights (get state 8 0)
+        sixes (get state 6 0)
+        minus-ones (get state -1 0)
+        state-with-six-updated (into {} (map (fn [[k v]]
+                                               [(if (= -1 k) 6 k) v]) state))]
+    (if (pos? minus-ones) (assoc state-with-six-updated 8 (+ eights minus-ones) 6 (+ minus-ones sixes))
+        state-with-six-updated)))
 
-(defn after-one-day [timers]
-  (->> timers
-       (map dec)
-       spawn-fish-if-needed))
+(defn age [state]
+  (->> state
+       (map (fn [[k v]]
+              [(dec k) v]))
+       (into {})
+       (spawn)))
 
-(defn after-n-days [input n]
-  (if (= 0 n) input
-      (after-n-days (after-one-day input) (dec n))))
+(defn part-two-solution [input n]
+  (loop [state (frequencies (parse-input input))
+         days n]
+    (if (= 0 days)
+      (reduce + (vals state))
+      (recur (age state) (dec days)))))
 
-(defn part-one-solution [input]
-  (-> input
-      parse-input
-      (after-n-days 80)
-      count))
+(part-two-solution sample-input 80)
+(part-two-solution part-one-input 80)
 
-(comment
-  part-one-input
-  (parse-input sample-input)
-  (after-one-day (after-one-day (parse-input sample-input)))
-  (after-n-days (parse-input sample-input) 18))
-
-(part-one-solution sample-input)
-(part-one-solution part-one-input)
+(part-two-solution sample-input 256)
+(part-two-solution part-one-input 256)
