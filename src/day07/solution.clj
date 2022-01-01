@@ -18,11 +18,13 @@
        (map #(reduce + (range (inc (Math/abs (- n %))))))
        (reduce +)))
 
-(let [max-input (apply max (parse-input sample-input))
-      min-input (apply min (parse-input sample-input))]
-  (->> (range min-input (inc max-input))
-       (map #(get-distance (parse-input sample-input) %))
-       (apply min)))
+(defn get-distance-freq [parsed-input n]
+  (->> parsed-input
+       frequencies
+       (map (fn [[k v]]
+              (let [uniq-fuel (reduce + (range (inc (Math/abs (- n k)))))]
+                (* v uniq-fuel))))
+       (reduce +)))
 
 (defn part-one-solution [input]
   (let [parsed-input (parse-input input)
@@ -37,15 +39,19 @@
         max-input (apply max parsed-input)
         min-input (apply min parsed-input)]
     (->> (range min-input (inc max-input))
-         (map #(get-distance-stepped parsed-input %))
+         (map #(get-distance-freq parsed-input %))
          (apply min))))
 
 (comment
   (parse-input sample-input)
-  (get-distance-stepped (parse-input sample-input) 2))
+  (get-distance-stepped (parse-input sample-input) 2)
+  (def parsed-input (parse-input sample-input))
+  parsed-input
+  (frequencies parsed-input)
+  (get-distance-freq parsed-input 5))
 
 (part-one-solution sample-input)
 (part-one-solution part-one-input)
 
 (part-two-solution sample-input)
-(part-two-solution part-one-input) ;; quite slow, may need to convert input into frequencies and only calculate for distinct values
+(part-two-solution part-one-input)
