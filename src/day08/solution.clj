@@ -12,14 +12,7 @@ bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbg
 egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
 gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce")
 
-sample-input
-
-(def part-one-input (->> "resources/day08/part_one.txt"
-                         slurp))
-
-part-one-input
-
-(string/split-lines sample-input)
+(def part-one-input (slurp "resources/day08/part_one.txt"))
 
 (defn is-one [segment]
   (= 2 (count segment)))
