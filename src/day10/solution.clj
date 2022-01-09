@@ -58,19 +58,53 @@ part-one-input
 (part-one-solution sample-input)
 (part-one-solution part-one-input)
 
-(comment
+(defn matching-char [char]
+  (case char
+    "{" "}"
+    "(" ")"
+    "[" "]"
+    "<" ">"))
 
-  (def incomplete "[({(<(())[]>[[{[]{<()<>>")
-  (def complete "(((((((((())))))))))")
-  (def corrupted "{([(<{}[<>[]}>{[]{[(<()>")
+(defn is-incomplete [s]
+  (let [dangling-chars (->> s
+                            strip-all
+                            (#(string/split % #""))
+                            (remove empty?))]
+    {:chars dangling-chars
+     :incomplete (and
+                  (every? #(string/includes? "([{<" %) dangling-chars)
+                  (pos? (count dangling-chars)))}))
 
-  (strip-all incomplete)
-  (strip-all complete)
-  (strip-all corrupted)
+(defn get-missing-matching-string [s]
+  (->> "[({(<(())[]>[[{[]{<()<>>"
+       is-incomplete
+       :chars
+       reverse
+       (map matching-char)
+       (string/join)))
 
-  (find-illegal-char corrupted)
-  (find-illegal-char incomplete)
-  (find-illegal-char complete)
-  (find-illegal-char "[[<[([]))<([[{}[[()]]]")
-  (find-illegal-char "[{[{({}]{}}([{[{{{}}([]")
-  (find-illegal-char "<{([([[(<>()){}]>(<<{{"))
+(defn get-char-completion-score [char]
+  (case char
+    ")" 1
+    "]" 2
+    "}" 3
+    ">" 4))
+
+(defn get-completion-score [s]
+  (loop [chars (string/split s #"")
+         score 0]
+    (if (empty? chars) score
+        (recur (rest chars) (+ (* 5 score) (get-char-completion-score (first chars)))))))
+
+(defn part-two-solution [input]
+  (let [scores (->> input
+                    parse-input
+                    (filter #(:incomplete (is-incomplete %)))
+                    (map get-missing-matching-string)
+                    (map get-completion-score))
+        sorted (sort scores)
+        l (count scores)]
+    (nth sorted (/ (dec l) 2))))
+
+(part-two-solution sample-input)
+(part-two-solution part-one-input)
