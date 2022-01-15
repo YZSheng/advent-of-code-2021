@@ -60,9 +60,6 @@ part-one-input
 (defn update-in-map [x y v parsed-map]
   (assoc (into [] parsed-map) y (assoc (into [] (nth parsed-map y)) x v)))
 
-(defn count-zeros [m]
-  (count (filter zero? (flatten m))))
-
 (defn get-next-value [v]
   (cond
     (= 0 v) 0
@@ -111,6 +108,23 @@ part-one-input
 
 (part-one-solution sample-input)
 (part-one-solution part-one-input)
+
+(defn is-map-in-sync? [m]
+  (->> m
+       flatten
+       distinct
+       count
+       (= 1)))
+
+(defn part-two-solution [parsed-map]
+  (loop [m parsed-map
+         n 0]
+    (if (is-map-in-sync? m)
+      n
+      (recur (first (perform-one-step m)) (inc n)))))
+
+(part-two-solution (parse-input sample-input))
+(part-two-solution (parse-input part-one-input))
 
 (comment
   (def test-map (parse-input test-input))
