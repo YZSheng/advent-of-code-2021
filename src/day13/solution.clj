@@ -80,9 +80,49 @@ part-one-input
 (part-one-solution sample-input)
 (part-one-solution part-one-input)
 
+(defn draw [dots]
+  (let [xs (map first dots)
+        ys (map last dots)
+        x-bound (apply max xs)
+        y-bound (apply max ys)
+        converted (for [y (range (inc y-bound))
+                        x (range (inc x-bound))]
+                    (if (some #{[x y]} dots) "#" "."))]
+    (->> converted
+         (partition (inc x-bound))
+         (interpose ["\n"])
+         flatten
+         (apply str)
+         println)))
+
+(defn fold-once [instruction dots]
+  (let [[direction fold-at] instruction]
+    (->> dots
+         (map #(fold % direction fold-at))
+         distinct)))
+
+(defn get-final-dots [input]
+  (let [[instructions dots] (parse-input input)]
+    (loop [instructions instructions
+           dots dots]
+      (if (empty? instructions)
+        dots
+        (recur (rest instructions) (fold-once (first instructions) dots))))))
+
+(defn part-two-solution [input]
+  (->> input
+       get-final-dots
+       draw))
+
+
+(part-two-solution sample-input)
+(part-two-solution part-one-input)
+
 (comment
   (fold-horizontally '(5 5) 3)
   (fold-vertically '(5 5) 4)
+
+  (draw (last (parse-input sample-input)))
 
   (-> "fold along x=655"
       (string/split #"\s")
