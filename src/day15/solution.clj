@@ -73,14 +73,26 @@
                       (and (= (:x visited-p) (:x neighbour))
                            (= (:y visited-p) (:y neighbour)))) visited)) n)))
 
+(defn add-or-update [unvisited p]
+  (if-let [point (first (filter #(and (= (:x p) (:x %))
+                                      (= (:y p) (:y %))) unvisited))]
+    (let [rest (remove #(and (= (:x p) (:x %))
+                             (= (:y p) (:y %))) unvisited)]
+      (conj rest (assoc point :cost (min (:cost p) (:cost point)))))
+    (conj unvisited p)))
+
 (defn add-to-unvisited [unvisited new-ps]
-  (->> (concat unvisited new-ps)
-       distinct
-       (sort-by :cost)))
+  (if (empty? new-ps)
+    unvisited
+    (recur (add-or-update unvisited (first new-ps)) (rest new-ps))))
+
+(add-to-unvisited [{:x 1 :y 1 :v 1 :cost 2}] [{:x 1 :y 1 :v 1 :cost 2}
+                                              {:x 1 :y 1 :v 1 :cost 1}
+                                              {:x 1 :y 2 :v 1 :cost 1}])
 
 (defn part-one-solution [n x y m visited unvisited cost]
   (let [neighbours (get-unvisited-neighbours x y m visited cost)
-        updated-unvisited (add-to-unvisited unvisited neighbours)
+        updated-unvisited (sort-by :cost (add-to-unvisited unvisited neighbours))
         updated-visited (conj visited {:x x :y y :v (get-points-in-map x y m) :cost cost})]
     (if (and (= x n) (= y n))
       cost
