@@ -25,28 +25,16 @@
 (defn get-points-in-map [x y parsed-map]
   (nth (nth parsed-map y []) x -1))
 
-(defn get-neighbour-up [x y]
-  (if (= 0 y) nil
-      [x (dec y)]))
-
-(defn get-neighbour-down [x y m]
-  (if (= y (dec (count m))) nil
-      [x (inc y)]))
-
-(defn get-neighbour-left [x y]
-  (if (zero? x) nil
-      [(dec x) y]))
-
-(defn get-neighbour-right [x y m]
-  (if (= x (dec (count (first m)))) nil
-      [(inc x) y]))
-
 (defn get-all-neighbours [x y m]
-  (->> [(get-neighbour-up x y)
-        (get-neighbour-right x y m)
-        (get-neighbour-down x y m)
-        (get-neighbour-left x y)]
-       (filter identity)))
+  (let [x-bound (dec (count (first m)))
+        y-bound (dec (count m))]
+    (cond-> []
+      (> x 0) (conj [(dec x) y])
+      (< x x-bound) (conj [(inc x) y])
+      (> y 0) (conj [x (dec y)])
+      (< y y-bound) (conj [x (inc y)]))))
+
+(get-all-neighbours 9 9 parsed-map)
 
 (defn cost-map [m]
   (into {} (for [x (range (count (first m)))
