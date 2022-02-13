@@ -58,24 +58,20 @@
       [{:nested (remove empty? value)} used])))
 
 (defn parse-bits [binary]
-  ;; (println "parse-bits" (string/join "" binary))
   (if (or (empty? binary) (every? #(= % \0) binary))
     [{} 0]
     (let [packet-version (get-version-number binary)
           type-id (get-type-id binary)
           rest-bits (get-rest-bits binary)
           [parsed used] (parse-by-type type-id rest-bits)]
-      ;; (println "parse-by-type" type-id rest-bits "used" used "bits")
       [(assoc parsed :packet-version packet-version :type-id type-id) (+ used 6)])))
 
 (defn parse-nested-mode-zero [bit-char-list]
-  ;; (println "parse-nested-mode-zero" (string/join "" bit-char-list))
   (let [sub-packets-length (convert-binary-to-decimal (string/join "" (take 15 bit-char-list)))
         rest-chars (drop 15 bit-char-list)]
     (loop [rest-chars rest-chars
            sub-packets []
            used 0]
-      ;; (println "loop in parse mode 0, used" used "subpacket length" sub-packets-length "rest-char was" (string/join "" rest-chars))
       (if (= used sub-packets-length)
         [sub-packets (+ 15 sub-packets-length)]
         (let [[parse-result used-bits] (parse-bits rest-chars)]
@@ -84,14 +80,12 @@
                  (+ used used-bits)))))))
 
 (defn parse-nested-mode-one [bit-char-list]
-  ;; (println "parse-nested-mode-one" (string/join "" bit-char-list))
   (let [sub-packets-count (convert-binary-to-decimal (string/join "" (take 11 bit-char-list)))
         rest-chars (drop 11 bit-char-list)]
     (loop [rest-chars rest-chars
            sub-packets-count sub-packets-count
            sub-packets []
            used 0]
-      ;; (println "parse-nested-mode-one" used)
       (if (zero? sub-packets-count)
         [sub-packets (+ 11 used)]
         (let [[parse-result used-bits] (parse-bits rest-chars)]
@@ -101,7 +95,6 @@
                  (+ used used-bits)))))))
 
 (defn parse-nested [bits]
-  ;; (println "parse-nested" (string/join "" bits))
   (if (= (first bits) \0)
     (let [[result bit-used] (parse-nested-mode-zero (drop 1 bits))]
       [result (inc bit-used)])
@@ -114,7 +107,6 @@
 (defn sum-versions [parsed]
   (let [nested (get parsed :nested [])
         version (:packet-version parsed)]
-    (println nested)
     (if (empty? nested)
       version
       (+ version (apply + (map sum-versions nested))))))
