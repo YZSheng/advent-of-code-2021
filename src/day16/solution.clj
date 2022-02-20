@@ -119,6 +119,27 @@
 
 (part-one-solution (slurp "resources/day16/part_one.txt"))
 
+(def ops-map {4 identity
+              0 +
+              1 *
+              2 min
+              3 max
+              5 #(if (> %1 %2) 1 0)
+              6 #(if (< %1 %2) 1 0)
+              7 #(if (= %1 %2) 1 0)})
+
+(defn calculate [{:keys [type-id value nested]}]
+  (if (= type-id 4) value
+      (apply (ops-map type-id) (map calculate nested))))
+
+(defn part-two-solution [input]
+  (-> input
+      parse-hex-input
+      first
+      calculate))
+
+(part-two-solution (slurp "resources/day16/part_one.txt"))
+
 (comment
   (convert-hex-to-binary "D2FE28")
   (convert-hex-to-binary "8A004A801A8002F478")
